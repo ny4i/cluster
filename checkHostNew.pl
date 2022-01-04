@@ -1,8 +1,11 @@
 #!/usr/bin/perl
 use strict;
 use Net::DNS::Nslookup;
+use Net::DNS::Resolver;
 use Net::Telnet;
 use POSIX qw(strftime);
+use Socket;
+
 
  
 my $recCount = 0;
@@ -17,14 +20,19 @@ my $dxFileName = "DXCLUSTERS.DAT.$date";
 my $trFileName = "trcluster.dat.$date";
 my $N1MMFileName = "N1MMClusters.txt.$date";
 
+#my $resolver = Net::DNS::Resolver->new();
+#my $reply = $resolver->search( 've7cc.net' );
+#$resolver->print;
+#print "$reply\n";
 # Check canary hosts to verify DNS resolution is working
-my $nslookup = Net::DNS::Nslookup->get_ips("ve7cc.net");
+#my $nslookup = Net::DNS::Nslookup->get_ips('google.com');
+my $nslookup = inet_aton("ve7cc.net");
 printf("%s\n", $nslookup);
 if (length($nslookup) == 0){
    die "Cannot resolve known host ve7cc.net - Check DNS functionality\n";
 }
 
-$nslookup = Net::DNS::Nslookup->get_ips("dx.k3lr.com");
+$nslookup = inet_aton("dx.k3lr.com");
 if (length($nslookup) == 0){
    die "Cannot resolve known host dx.k3lr.com - Check DNS functionality\n";
 }
@@ -55,7 +63,7 @@ while (<>) {
       }
       if ($hostname =~ /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/){ # Check for an IP address so we do not do an nslookup
       } else {
-         my $nslookup = Net::DNS::Nslookup->get_ips($hostname);
+         my $nslookup = inet_aton($hostname);
          if (length($nslookup) == 0){
             print "Invalid Host;$name;$hostname;$port;$type\n";
             $notFound++;
